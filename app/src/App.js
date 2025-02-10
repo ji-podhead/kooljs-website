@@ -51,7 +51,6 @@ function App() {
                   {Animated_Components[selector]}
                 </div>
                 <div title="Documentation" class="w-full h-full overflow-scroll">
-                <iframe src="https://ji-podhead.github.io/kooljs/docs/README.html" frameborder="0" width="100%" height="100%"></iframe>
 
                 {/* <div title="Documentation" class="w-full h-full overflow-scroll">
                 <iframe src={new URL("./docs/docs.html", import.meta.url)}  frameborder="0" width="100%" height="100%"></iframe>
