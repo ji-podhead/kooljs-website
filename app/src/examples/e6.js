@@ -1,4 +1,3 @@
-import ExampleDescription from "./utils/utils";
 import   {
   get_status,
   addTrigger,removeTrigger,
@@ -65,7 +64,6 @@ function Example(animator) {
     })
     return (
     <div class="w-full h-full bg-slate-700">
-      <ExampleDescription header={header} description={exampleDiscription}/>
       <div class="w-full h-full flex items-center justify-center">
       <div id={"main"} key={"main"} class="w-[95%] h-[95%] bg-[#21d9cd] border-4 border-[#21d9cd] flex rounded-md justify-center justify-items-center items-center">
       <div id={"inner"} key={"inner"} class="w-10 h-10 bg-white">
@@ -85,12 +83,10 @@ const start=(()=>{
 const stop=(()=>{
   animProps.animator.stop()
 })
-const header="callbacks"
-const exampleDiscription=`This example demonstrates how to create animations using a sequence instead of min/max values.
-you can change the sequence by calling animator.update(). If you dont specify the max length of the sequence using the sequence_max_lengt argument, the length of the initial array will be used.
-`
+const exampleProps={
+  
   // this is just util stuff for the example project
-  const mdFile = `\`\`\`javascript
+ mdFile: `\`\`\`javascript
   // this is our placeholder dict for the elements that get animated
   var animationProps = {
     setc: ((val) => {
@@ -123,10 +119,8 @@ you can change the sequence by calling animator.update(). If you dont specify th
         </div>
       </div>
     )}
-  \`\`\``
-const Controls=[
+  \`\`\``, Controls:[
   {
-    name:"set random size",
     info:"Stops the animation sequence using the function thats running on the worker.",
     button:{
       name:"set random size",
@@ -134,7 +128,6 @@ const Controls=[
     },
   },
   {
-    name:"Start",
     info:"This event will continues to play any animation, that was running before calling stop().",
     button:{
       name:"start",
@@ -142,21 +135,20 @@ const Controls=[
     }
   },
   {
-    name:"Stop",
     info:"This event will pause the animation-loop, but any running animations wont reset when you call start() again.",
     button:{
       name:"stop",
       onClick: stop
     },
   },
-]
-
-const TutorialWidget={
-  name:"simple_Animation_2",
+],
+info:{
+name:"callbacks",description:`This example demonstrates how to create animations using a sequence instead of min/max values.
+you can change the sequence by calling animator.update(). If you dont specify the max length of the sequence using the sequence_max_lengt argument, the length of the initial array will be used.
+`,
   info: "This Examples shows how to use Lerp animation with a sequence.",
   gitlink:"https://github.com/ji-podhead/kooljs/blob/main/livedemo_project/src/examples/e3.js",
-  mdfile:mdFile
 }
-
-export { Example,Controls,TutorialWidget }
+}
+export { Example, exampleProps}
 
