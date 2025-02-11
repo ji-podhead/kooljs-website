@@ -18,6 +18,13 @@ async function sleep(milliseconds) {
 }
 function next(setsel, animator, index) {
     animator.stop()
+    animator.stop("all")
+    animator.reset_animations("all")
+    
+    
+    
+    
+    
     requestAnimationFrame(() => {
         setsel(index)
     })
@@ -168,7 +175,7 @@ function Header({ mainAccessor }) {
                 </button>
             </div>
             <div class="w-full justify-self-start text-[#C0E58B] self-center text-4xl "><b>kooljs</b></div>
-            <div class="w-[10%] h-full justify-self-end self-center gap-5 flex flex-row items-center justify-center">
+            <div class="w-[10%] h-full justify-self-end self-center gap-5 flex flex-row items-center justify-center px-5">
                 {/* <div id="manual"  
                 onMouseOver={()=>{changeBorder("manual","#C0E58B")}}
                 onMouseOut={()=>{changeBorder("manual","white")}}

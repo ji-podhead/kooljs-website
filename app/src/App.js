@@ -48,7 +48,7 @@ function App() {
         {selector_main <= 0 && <div class="w-full h-full flex  bg-slate-400  items-center justify-center">
           <div class="w-[96%] h-[96%] border-[3px] border-slate-700 rounded-md flex flex-row items-center justify-center">
           <div class="w-[20%] h-full ">
-            <AnimationControl args={{ sel: selector,animator:animator,setsel:setSelector }} />
+            {selector>=0&&<AnimationControl args={{ sel: selector,animator:animator,setsel:setSelector }} />}
           </div>
           <div class="w-[80%] h-full  bg-white " >
             <div class="w-full h-[50%] flex flex-row">

@@ -1,67 +1,63 @@
-import   {
-  get_status,
-  addTrigger,removeTrigger,
-  get_time,set_delta_t,
-  get_step,set_step,
-  is_active,get_active,
-  start_animations,stop_animations,
-  setLerp,setMatrix,
-  get_lerp_value,
-  soft_reset,hard_reset,
-  get_duration,set_duration,
-  set_sequence_length,
-  change_framerate,
-  get_constant,get_constant_number,get_constant_row,render_constant,
-  update_constant,
-  set_delay,get_delay,
-  get_delay_delta,set_delay_delta,
-  lambda_call
-} from 'kooljs/worker'
+import   {start_animations,setMatrix,get_lerp_value, get_constant_row,set_duration} from 'kooljs/worker'
 const animProps={
   animator:undefined,//                      <- animator               << Animator >> 
   start_animation:undefined,//               <- random values + start  << Animator.Lambda >>
   size_animation:undefined,//                <- single number lerp     << Lerp >>
   size_constant:undefined,//                 <- xy                     << Constant-Matrix >>
   color_animation:undefined,//               <- xyz                    << MatrixLerp >> 
-  size_constant_id:undefined
+  size_constant_id:undefined,//              <- we need before init    << Number >>
+  size_duration_max:10//                     <- duration               << Number >>
 }
 function bg(val){
   return `linear-gradient(to right, rgb(0,0,0), rgb(${val[0]}, ${val[1]}, ${val[2]})`
 }
 function setStyle(val){
-  console.log(val)
+  //console.log(val)
   document.getElementById("inner").style.width = `${Math.floor(val[0])}%`;
   document.getElementById("inner").style.height = `${Math.floor(val[1])}%`;
 }
 function Example(animator) {
     animProps.animator=animator
+
     animProps.color_animation=animator.Matrix_Lerp({
       render_callback:((val)=>document.getElementById("main").style.background = (bg(val))),
       steps:[[0,0,0],[50,50,255]],
-      duration:10
+      duration:animProps.size_duration_max
     })
     animProps.size_animation=animator.Matrix_Lerp({ 
         render_callback:((val)=>setStyle(val)),
-        duration: 10, 
-        steps: [[0,0],[100,100]],
+        duration: animProps.size_duration_max, 
+        steps: [[1,1],[100,100]],
     })
-    animProps.size_constant_id=animator.get_constant_size("matrix")
+    animProps.size_constant_id=animator.get_constant_size("matrix")+1
+
     animProps.start_animation = animator.Lambda({
       callback:  (()=>{
         setMatrix(`${animProps.color_animation.id}`,1, [Math.random()*50, Math.random()*50, Math.random()*255]);
-        const random_size=get_constant_row(`${animProps.size_constant_id}`,0);
-        console.log(random_size);
-        setMatrix(`${animProps.size_animation.id}`,1, random_size);
+        // for the size animations of the div
+        console.log(`${animProps.size_animation.id}`)
+        const current= get_lerp_value(`${animProps.size_animation.id}`)
+        const target=get_constant_row(`${animProps.size_constant_id}`,0)
+        if(target==current){
+          target[0]+=1
+          target[1]+=1
+        }
+        const duration = (Math.max(...target.map((val, index) => Math.abs((val - current[index])+0.1)))/70)+1*`${animProps.size_duration_max}`;
+        console.log("duration " +duration)
+        setMatrix(`${animProps.size_animation.id}`,1, target);
+        set_duration(`${animProps.size_animation.id}`, duration )
         start_animations([`${animProps.size_animation.id}`])
       }),
       animProps:animProps
     }) 
+
     animProps.size_constant=animator.constant({
       type:"matrix",
-      value:[[0,0,0],[50,50,255]],
-      render_triggers:[animProps.color_animation.id],
-      render_callbacks:[{id:animProps.start_animation.id,args: undefined }]
+      value:[[70,70]],
+      render_triggers:[animProps.color_animation.id],                       // the trigger fields starts color_animation
+      render_callbacks:[{id:animProps.start_animation.id,args: undefined }] // the callback fields starts start_animation
     })
+
     return (
     <div class="w-full h-full bg-slate-700">
       <div class="w-full h-full flex items-center justify-center">
@@ -74,80 +70,101 @@ function Example(animator) {
     </div>
   )}
 const set_size=(()=>{
-    //animProps.animator.start_animations([animProps.size_animation.id])
-    animProps.animator.update_constant([{type:"matrix",id:animProps.size_constant.id,value:[(30+Math.random()*70),30+Math.random()*70]}])
+    animProps.animator.update_constant([{type:"matrix",id:animProps.size_constant.id,value:[[(30+Math.random()*70),30+Math.random()*70]]}])
 })
-const start=(()=>{
-  animProps.animator.start()
-})
-const stop=(()=>{
-  animProps.animator.stop()
-})
+
 const exampleProps={
   
   // this is just util stuff for the example project
  mdFile: `\`\`\`javascript
-  // this is our placeholder dict for the elements that get animated
-  var animationProps = {
-    setc: ((val) => {
-        document.getElementById("b").style.transform = \`translate(\${val}%)\`;
-        console.log(document.getElementById("b").style.transform) 
+ import   {start_animations,setMatrix,get_lerp_value, get_constant_row,set_duration} from 'kooljs/worker'
+const animProps={
+  animator:undefined,//                      <- animator               << Animator >> 
+  start_animation:undefined,//               <- random values + start  << Animator.Lambda >>
+  size_animation:undefined,//                <- single number lerp     << Lerp >>
+  size_constant:undefined,//                 <- xy                     << Constant-Matrix >>
+  color_animation:undefined,//               <- xyz                    << MatrixLerp >> 
+  size_constant_id:undefined,//              <- we need before init    << Number >>
+  size_duration_max:10//                     <- duration               << Number >>
+}
+function bg(val){
+  return \`linear-gradient(to right, rgb(0,0,0), rgb(\${val[0]}, \${val[1]}, \${val[2]})\`
+}
+function setStyle(val){
+  //console.log(val)
+  document.getElementById("inner").style.width = \`\${Math.floor(val[0])}%\`;
+  document.getElementById("inner").style.height = \`\${Math.floor(val[1])}%\`;
+}
+function Example(animator) {
+    animProps.animator=animator
+
+    animProps.color_animation=animator.Matrix_Lerp({
+      render_callback:((val)=>document.getElementById("main").style.background = (bg(val))),
+      steps:[[0,0,0],[50,50,255]],
+      duration:animProps.size_duration_max
+    })
+    animProps.size_animation=animator.Matrix_Lerp({ 
+        render_callback:((val)=>setStyle(val)),
+        duration: animProps.size_duration_max, 
+        steps: [[1,1],[100,100]],
+    })
+    animProps.size_constant_id=animator.get_constant_size("matrix")+1
+
+    animProps.start_animation = animator.Lambda({
+      callback:  (()=>{
+        setMatrix(\`\${animProps.color_animation.id}\`,1, [Math.random()*50, Math.random()*50, Math.random()*255]);
+        // for the size animations of the div
+        console.log(\`\${animProps.size_animation.id}\`)
+        const current= get_lerp_value(\`\${animProps.size_animation.id}\`)
+        const target=get_constant_row(\`\${animProps.size_constant_id}\`,0)
+        if(target==current){
+          target[0]+=1
+          target[1]+=1
+        }
+        const duration = (Math.max(...target.map((val, index) => Math.abs((val - current[index])+0.1)))/70)+1*\`\${animProps.size_duration_max}\`;
+        console.log("duration " +duration)
+        setMatrix(\`\${animProps.size_animation.id}\`,1, target);
+        set_duration(\`\${animProps.size_animation.id}\`, duration )
+        start_animations([\`\${animProps.size_animation.id}\`])
       }),
-      animator:undefined,
-      target:undefined
-  }
-  
-  // utility functions to start the animation and update the sequence
-  const update=(() => {
-      animator.update_lerp([{animObject: animationProps.target,value: [0.0, 100.0, 0.0]}])
-     })
-  const start=(()=>{
-      animator.start([animationProps.target.id])
-     })
-    
-  // the divs that get animated
-  function E2(animator) {
-      animator=animator
-      animationProps.target=animator.Lerp({ accessor: [animationProps.c, animationProps.setc], duration: 10, steps: [0.1, 400.1, 0.1, 100, 20, 30, 40, 500, 0],sequence_max_lengt:10 })
+      animProps:animProps
+    }) 
+
+    animProps.size_constant=animator.constant({
+      type:"matrix",
+      value:[[70,70]],
+      render_triggers:[animProps.color_animation.id],                       // the trigger fields starts color_animation
+      render_callbacks:[{id:animProps.start_animation.id,args: undefined }] // the callback fields starts start_animation
+    })
+
     return (
-      <div class="w-full h-full flex flex-row">
-        <div class="w-full h-full items-center justify-center flex flex-col ">
-          <div class="shrink-1 items-center justify-center w-full h-full font-size-xl flex flex-row">
-            <div id="a" class="w-10 h-10 bg-blue-400">a</div>
-            <div id="b" class="w-10 h-10 bg-blue-500">b</div>
-          </div>
-        </div>
+    <div class="w-full h-full bg-slate-700">
+      <div class="w-full h-full flex items-center justify-center">
+      <div id={"main"} key={"main"} class="w-[95%] h-[95%] bg-[#21d9cd] border-4 border-[#21d9cd] flex rounded-md justify-center justify-items-center items-center">
+      <div id={"inner"} key={"inner"} class="w-10 h-10 bg-white">
+          inner
       </div>
-    )}
+      </div>
+    </div>
+    </div>
+  )}
+const set_size=(()=>{
+    animProps.animator.update_constant([{type:"matrix",id:animProps.size_constant.id,value:[[(30+Math.random()*70),30+Math.random()*70]]}])
+})
+
   \`\`\``, Controls:[
   {
-    info:"Stops the animation sequence using the function thats running on the worker.",
+    info:"updates the constant and starts one animation by trigger and one by callback",
     button:{
       name:"set random size",
       onClick: set_size
     },
   },
-  {
-    info:"This event will continues to play any animation, that was running before calling stop().",
-    button:{
-      name:"start",
-      onClick: start
-    }
-  },
-  {
-    info:"This event will pause the animation-loop, but any running animations wont reset when you call start() again.",
-    button:{
-      name:"stop",
-      onClick: stop
-    },
-  },
 ],
 info:{
-name:"callbacks",description:`This example demonstrates how to create animations using a sequence instead of min/max values.
-you can change the sequence by calling animator.update(). If you dont specify the max length of the sequence using the sequence_max_lengt argument, the length of the initial array will be used.
-`,
-  info: "This Examples shows how to use Lerp animation with a sequence.",
-  gitlink:"https://github.com/ji-podhead/kooljs/blob/main/livedemo_project/src/examples/e3.js",
+  name:"constant triggers",
+  description:` This is a demonstration about how to use constant triggers and callbacks when updating it. You can use the render_triggers and render_callbacks fields in the constant contstructor. They will get trigger/called when you update the constructor.`,
+  gitlink:"https://github.com/ji-podhead/kooljs/blob/main/livedemo_project/src/examples/e6.js",
 }
 }
 export { Example, exampleProps}
