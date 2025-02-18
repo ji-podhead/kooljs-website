@@ -1,18 +1,22 @@
 
-import './App.css';
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import "./App.css";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { Animator } from "kooljs/animator"
-import { Example as E1 } from './examples/e1';
-import { Example as E2 } from './examples/e2';
-import { Example as E3 } from './examples/e3';
-import { Example as E4 } from './examples/e4';
-import { Example as E5 } from './examples/e5';
-import { Example as E6 } from './examples/e6';
+import { Example as E1 } from "./examples/e1"
+import { Example as E2 } from "./examples/e2"
+import { Example as E3 } from "./examples/e3"
+import { Example as E4 } from "./examples/e4"
+import { Example as E5 } from "./examples/e5"
+import { Example as E6 } from "./examples/e6"
+import { Example as E7 } from "./examples/e7"
 
 import { Widgets, AnimationControl, Header, CodeBlocks } from "./utils"
 const Animated_Components = []
 const animator = new Animator(50)
 function App() {
+  const myHeaders = new Headers();
+myHeaders.set("Cross-Origin-Opener-Policy", "same-origin");
+myHeaders.set("Cross-Origin-Embedder-Policy", "require-corp");
   const [selector, setSelector] = useState(-1)
   const [selector_main, setSelector_main] = useState(0)
   useEffect(() => {
@@ -23,6 +27,7 @@ function App() {
       Animated_Components.push(E4(animator))
       Animated_Components.push(E5(animator))
       Animated_Components.push(E6(animator))
+      Animated_Components.push(E7(animator))
       resolve();
     }).then(() => {
       animator.init(true);
@@ -31,7 +36,7 @@ function App() {
   }, []);
 
   return (
-
+    
     <div class="App  bg-[#242d36] w-full h-full flex   items-center justify-center  " style={{ width: window.innerWidth, height: window.innerHeight }}>
      <div class=" w-[96%]  h-[96%] flex flex-col items-center justify-center rounded-md border-4  border-[#BF8DE1] ">
       
@@ -72,5 +77,4 @@ function App() {
     </div>
   );
 }
-
 export default App;

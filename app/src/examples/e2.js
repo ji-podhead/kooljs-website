@@ -1,8 +1,9 @@
 // this is our placeholder dict for the elements that get animated
+
 var animationProps = {
+  target:undefined,
   setc: ((val) => {
-      document.getElementById("e2_b").style.transform = `translate(0,${val}%)`;
-      //console.log(document.getElementById("b").style.transform) 
+     document.getElementById("e2a_b").style.transform = `translate(0,${val}%)`;
     }),
     animator:undefined,
     target_a:undefined
@@ -37,7 +38,7 @@ function Example(animator) {
       <div class="w-full h-full items-center justify-center flex flex-col">
         <div class="shrink-1 items-center justify-center w-full h-full font-size-xl flex flex-row">
           <div id="e2_a" class="w-10 h-10 bg-blue-400">a</div>
-          <div id="e2_b" class="w-10 h-10 bg-blue-500">b</div>
+          <div id="e2a_b" class="w-10 h-10 bg-blue-500">b</div>
         </div>
       </div>
     </div>

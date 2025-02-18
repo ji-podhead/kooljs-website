@@ -11,24 +11,17 @@ import { exampleProps as exampleProps2 } from './examples/e3';
 import { exampleProps as exampleProps3 } from './examples/e4';
 import { exampleProps as exampleProps4 } from './examples/e5';
 import { exampleProps as exampleProps5 } from './examples/e6';
+import { exampleProps as exampleProps6 } from './examples/e7';
 
-const tutorials = [exampleProps0, exampleProps1, exampleProps2, exampleProps3, exampleProps4, exampleProps5]
+const tutorials = [exampleProps0, exampleProps1, exampleProps2, exampleProps3, exampleProps4, exampleProps5,exampleProps6]
 async function sleep(milliseconds) {
     return new Promise(resolve => setTimeout(resolve, milliseconds))
 }
-function next(setsel, animator, index) {
+async function next(setsel, animator, index) {
     animator.stop()
-    animator.stop("all")
-    animator.reset_animations("all")
-    
-    
-    
-    
-    
-    requestAnimationFrame(() => {
-        setsel(index)
-    })
-
+    animator.stop_animations("all")
+    await sleep(24).then(() => { setsel(index) }) 
+        
 }
 function ExampleDescription(header, description) {
     return (
@@ -68,7 +61,7 @@ function Widgets({ setsel, animator }) {
     })
     )
     return (
-        <div class="bg-[#bac9d0] flex flex-col items-center   w-full h-full ">
+        <div class="bg-[#bac9d0] flex flex-col items-center overflow-scroll  w-full h-full ">
             <div class="w-full h-[7%] bg-[#4A5A6A] text-xl justiy-center items-center   flex   rounded-b-lg  " style={{ height: window.innerHeight * 0.03 }}>
                 <div class="w-full h-full  text-white">Examples</div>
             </div>
