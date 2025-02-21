@@ -1,4 +1,4 @@
-import   {start_animations,setMatrix,get_lerp_value, get_constant_row,set_duration, hard_reset, lambda_call, get_constant_number, reorient_duration, reorient_target, reorient_duration_by_distance, get_constant, reorient_duration_by_progress} from 'kooljs/worker'
+import   {start_animations,setMatrix,get_lerp_value, get_constant_row,set_duration, hard_reset, lambda_call, get_constant_number, reorient_duration, reorient_target, reorient_duration_by_distance, get_constant, reorient_duration_by_progress} from 'kooljs/worker_functions'
 
 const length=10
 const start=0
@@ -17,12 +17,14 @@ function bg(val) {
 }
   // doc.style.top = `${val[0]}%`;
   // doc.style.left = `${val[1]}%`;
-function setStyle(id, val) {
-if(id==1)  console.log("id " + id + " val "+ val)
-  const doc=document.getElementById(id)
+function setStyle(items,prefix) {
+  console.log(items)
+  items.forEach((val,id)=>{
+  const doc=document.getElementById(prefix+id)
   doc.style.transform = `translate(${val[0]}%,${val[1]}%)`;
   doc.style.opacity = `${val[2]}%`;
   doc.style.background = bg(val);
+})
 }
 function Example(animator) {
   const reference_matrix = []
@@ -67,10 +69,10 @@ function Example(animator) {
   )
 }
 const start_sidebar=(()=>{
-    animProps.animations.start_forward()
+    animProps.animator.start_groups([animProps.animations.id],[1])
 })
-const end_sidebar=(()=>{
-  animProps.animations.start_animation.call(0)
+const reverse_sidebar=(()=>{
+  animProps.animator.start_groups([animProps.animations.id],[0])
 })
  
   // animProps.start_timeline = animator.Timeline({
@@ -250,7 +252,7 @@ const set_size=(()=>{
     info:"calls the lambda start_animation with direction 0",
     button:{
       name:"stop",
-      onClick: end_sidebar
+      onClick: reverse_sidebar
     },
   },
 ],

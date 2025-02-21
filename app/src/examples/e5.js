@@ -1,4 +1,5 @@
-import { get_time, stop_animations, setMatrix, get_lerp_value, soft_reset, hard_reset, set_duration, get_constant_number, get_constant_row, update_constant, lambda_call,start_animations, get_active, is_active, set_delta_t, set_time, reorient_target, reorient_duration, reorient_duration_by_progress, get_duration } from "kooljs/worker"
+import {  hard_reset, reorient_target ,get_constant_number, get_constant_row, lambda_call, reorient_duration, start_animations, stop_animations, update_constant } from "kooljs/worker_functions"
+
 const length = 16       //          [opacity, w,  h, fontsize,      r,g,b]
 const reference_matrix = [[-100, 0, 0, 0, 0, 0, 0], [100, 80, 40, 13, 100, 130, 255]]
 const animProps = {

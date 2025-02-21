@@ -1,4 +1,4 @@
-import   {start_animations,setMatrix,get_lerp_value, get_constant_row,set_duration, hard_reset, reorient_duration_by_distance} from 'kooljs/worker'
+import   {start_animations,setMatrix,get_lerp_value, get_constant_row,set_duration, hard_reset, reorient_duration_by_distance} from "kooljs/worker_functions"
 const animProps={
   animator:undefined,//                      <- animator               << Animator >> 
   start_animation:undefined,//               <- random values + start  << Animator.Lambda >>
@@ -6,7 +6,7 @@ const animProps={
   size_constant:undefined,//                 <- xy                     << Constant-Matrix >>
   color_animation:undefined,//               <- xyz                    << MatrixLerp >> 
   size_constant_id:undefined,//              <- we need before init    << Number >>
-  size_duration_max:20//                     <- duration               << Number >>
+  size_duration_max:40//                     <- duration               << Number >>
 }
 function bg(val){
   return `linear-gradient(to right, rgb(0,0,0), rgb(${val[0]}, ${val[1]}, ${val[2]})`
@@ -31,7 +31,6 @@ function Example(animator) {
     animProps.size_constant_id=animator.get_constant_size("matrix")+1
     animProps.start_animation = animator.Lambda({
       callback:  (()=>{
-        debugger
         setMatrix(`${animProps.color_animation.id}`,1, [Math.random()*50, Math.random()*50, Math.random()*255]);
         const current= get_lerp_value(`${animProps.size_animation.id}`)
         const target_matrix=get_constant_row(`${animProps.size_constant_id}`,0)
@@ -39,7 +38,6 @@ function Example(animator) {
           target_matrix[0]+=1
           target_matrix[1]+=1
         }
-        debugger
         hard_reset(`${animProps.size_animation.id}`)
         setMatrix(`${animProps.size_animation.id}`,1, target_matrix);
         console.log("target " +target_matrix)
@@ -52,7 +50,6 @@ function Example(animator) {
             max_duration:`${animProps.size_duration_max}`,
             mode: "max_distance"
         })
-        debugger
         console.log("new duration " +duration)
         start_animations([`${animProps.size_animation.id}`])
       }),
