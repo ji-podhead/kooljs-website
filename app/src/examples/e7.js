@@ -1,25 +1,15 @@
 import   {start_animations,setMatrix,get_lerp_value, get_constant_row,set_duration, hard_reset, lambda_call, get_constant_number, reorient_duration, reorient_target, reorient_duration_by_distance, get_constant, reorient_duration_by_progress} from 'kooljs/worker_functions'
-
-const length=10
-const start=0
-const end=1
-const delay=1
-const delay_spread=2
-const min_duration=2
-const max_duration=15
 const animProps={
   animator: undefined,//                 <- animator               << Animator >> 
   animations: undefined,//           <- boxes dict             << div | MatrixLerp >> 
-  boxes: new Array(length),//  <- anim id's              << Float32 >> 
+  boxes: undefined,//  <- anim id's              << Float32 >> 
 }
-function bg(val) {
-  return `linear-gradient(to right, rgb(255,50,50), rgb(${val[3]}, ${val[4]}, ${val[5]})`
-}
-  // doc.style.top = `${val[0]}%`;
-  // doc.style.left = `${val[1]}%`;
+function bg(val) { return `linear-gradient(to right, rgb(255,50,50), rgb(${val[3]}, ${val[4]}, ${val[5]})`}
 function setStyle(items,prefix) {
-  console.log(items)
   items.forEach((val,id)=>{
+    // console.log("--------------")
+    // console.log(id)
+    // console.log(...val)
   const doc=document.getElementById(prefix+id)
   doc.style.transform = `translate(${val[0]}%,${val[1]}%)`;
   doc.style.opacity = `${val[2]}%`;
@@ -27,11 +17,13 @@ function setStyle(items,prefix) {
 })
 }
 function Example(animator) {
+  const length=10
+  animProps.boxes = new Array(length)
   const reference_matrix = []
   animProps.animator = animator
   for (let i = 0; i < length; i++) {
     const normal= i/length
-    const start_step=[100.1,-100.2,0,0,0,0]
+    const start_step=[100,-0.2,0,0,0,0]
     const end_step=[0,0,100,normal*150,normal*50,normal*255]
     reference_matrix.push([start_step,end_step])
     animProps.boxes[i] =  <div class="h-10 w-40 flex items-center rounded-md justify-center " id={"e7__" + i} key={"e7__" + i} style={{top: start_step[1] + "%",left:start_step[0] + "%"}}>
@@ -46,17 +38,32 @@ function Example(animator) {
  animProps.animations= animator.Matrix_Chain({
   reference_matrix:reference_matrix,
   length:length,
-  delay:delay,
-  delay_spread:delay_spread,
+  delay:1,
+  delay_spread:1,
   target_step:0,
-  min_duration:min_duration,
-  max_duration:max_duration,
+  min_duration:10,
+  max_duration:15,
   invert_step:1,
-  delay_invert:true,
+  custom_delay:{
+    callback:({animation_index,index,indices,direction})=>{
+      if(direction==1) {
+          const new_delay=`${animProps.delay}`+(indices.length-index)*`${animProps.delay_spread}`
+          return new_delay
+        }
+        else{
+          const new_delay=`${animProps.delay}`+(index)*`${animProps.delay_spread}`
+          return new_delay
+        }
+        
+    },
+    animProps:{
+      delay:0,
+      delay_spread:2
+    }
+  },
   id_prefix:"e7_",
   callback:setStyle
  })
-
   return (
     <div class="w-full h-full bg-slate-700">
       <div class="w-full h-full flex items-center justify-center">
@@ -257,8 +264,8 @@ const set_size=(()=>{
   },
 ],
 info:{
-  name:"sidebar",
-  description:` This is a demonstration about how to use constant triggers and callbacks when updating it. You can use the render_triggers and render_callbacks fields in the constant contstructor. They will get trigger/called when you update the constructor.`,
+  name:"Chains",
+  description:`This is a demonstration on how to use MatrixChain. It will create a group of  animations for you. The MatrixChain class uses a reference matrix to switch between 2 states. You basically have a start step and a target step. The matrix lerp animations that get created have a step length of 2 however. You can update the target step, by calling the animator method.`,
   gitlink:"https://github.com/ji-podhead/kooljs/blob/main/livedemo_project/src/examples/e6.js",
 }
 }
