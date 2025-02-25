@@ -4,6 +4,7 @@ const indices= new Float32Array(length)
 const min_width=30
 var animator_instance,new_min,width
 var red,green,blue,bg_gradient
+
 function bg(val){
   red= (255*(val/100))/4
   green= 0
@@ -38,8 +39,9 @@ function Example(animator) {
       indices[i]=elements[i].anim.id
     }
     return (
-    <div class="w-full h-full bg-[#ffffff]">
-      <div class="w-full h-full">
+    <div class="w-full h-full bg-slate-700 flex items-center content center justify-center">
+      <div class="w-[95%] h-[95%]  rounded-md  border-4 border-[#21d9cd] ">
+        
         <div class="shrink-0 items-start justify-center w-full h-full font-size-xl flex flex-col">
           {
             elements.map((e)=>(e.div))
@@ -55,7 +57,7 @@ const stop=(()=>{
   animator_instance.stop_animations("all")
 })
 const reset=(()=>{
-  animator_instance.reset_animations("all")
+  animator_instance.reset_animations(indices)
 })
 const init=(()=>{
   animator_instance.init()

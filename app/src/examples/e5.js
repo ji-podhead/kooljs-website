@@ -202,7 +202,7 @@ const start = (() => {
   animProps.animator.start()
 })
 const stop = (() => {
-  animProps.animator.stop_animations("all")
+  animProps.animator.stop()
 })
 
 

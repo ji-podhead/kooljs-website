@@ -21,12 +21,14 @@ function Example(animator) {
   animProps.boxes = new Array(length)
   const reference_matrix = []
   animProps.animator = animator
+  const a=[100,-50,0,0,100,0]
+  const b=[0,0,100,150,50,255]
+  const c=[-100,0,0,150,50,255]
+  const d=[50,0,100,0,0,0]
+  const e=[50,50,0,0,0,0]
+  reference_matrix.push([a,b,c,d,e]) // uni size reference matrix, so it can be used for all boxes
   for (let i = 0; i < length; i++) {
-    const normal= i/length
-    const start_step=[100,-0.2,0,0,0,0]
-    const end_step=[0,0,100,normal*150,normal*50,normal*255]
-    reference_matrix.push([start_step,end_step])
-    animProps.boxes[i] =  <div class="h-10 w-40 flex items-center rounded-md justify-center " id={"e7__" + i} key={"e7__" + i} style={{top: start_step[1] + "%",left:start_step[0] + "%"}}>
+    animProps.boxes[i] =  <div class="h-10 w-40 flex items-center rounded-md justify-center " id={"e7__" + i} key={"e7__" + i} style={{top: a[1] + "%",left:a[0] + "%"}}>
         <div id={"e7_" + i} key={"e7_" + i} class="w-full h-full truncate opacity-0 bg-white border-[#21d9cd] border-2 rounded-md flex-col gap-2 items-center justify-center" >
           <div class="text-center  "><b>Div No: {i}</b></div>
           <div class="text-left w-[80%] h-[10%] pl-2" >
@@ -38,15 +40,12 @@ function Example(animator) {
  animProps.animations= animator.Matrix_Chain({
   reference_matrix:reference_matrix,
   length:length,
-  delay:1,
-  delay_spread:1,
+  target_step:1,
+  start_step:0,
   min_duration:10,
   max_duration:15,
-  start_step:0,
-  target_step:1,
-  group_loop:false,
-  id_prefix:"e7_",
-  callback:setStyle,
+  group_loop:true,
+  sequence_length:4,
   custom_delay:{
     callback:({animation_index,index,indices,direction})=>{
       if(direction==1) {
@@ -64,7 +63,8 @@ function Example(animator) {
       delay_spread:2
     }
   },
-
+  id_prefix:"e7_",
+  callback:setStyle
  })
   return (
     <div class="w-full h-full bg-slate-700">
@@ -80,16 +80,15 @@ function Example(animator) {
 const start_sidebar=(()=>{
     animProps.animator.start_groups([animProps.animations.id],[1])
 })
-const reverse_sidebar=(()=>{
-  animProps.animator.start_groups([animProps.animations.id],[0])
+const stop_sidebar=(()=>{
+  animProps.animator.stop_groups([animProps.animations.id])
 })
-const set_sequence_1=(()=>{
-  animProps.animator.set_group({id: animProps.animations.id,field:"sequence_length", value:1})
+const set_ref_1=(()=>{
+  animProps.animator.set_group({id: animProps.animations.id,field:"ref_matrix", step:0,value: [200,-150,0,0,100,0]})
 })
-const set_sequence_2=(()=>{
-  animProps.animator.set_group({id: animProps.animations.id,field:"sequence_length", value:2})
+const set_ref_2=(()=>{
+  animProps.animator.set_group({id: animProps.animations.id,field:"ref_matrix", step:0,value: [0,-150,0,0,100,0]})
 })
- 
   // animProps.start_timeline = animator.Timeline({
   //   duration: 100,
   //   render_interval: 20,
@@ -259,35 +258,34 @@ const set_size=(()=>{
   {
     info:"calls the lambda start_animation with direction 1",
     button:{
-      name:"start forward",
+      name:"start",
       onClick: start_sidebar
     },
   },  
   {
-    info:"calls the lambda start_animation with direction 0",
+    info:"stop the group",
     button:{
-      name:"start reverse",
-      onClick: reverse_sidebar
+      name:"stop",
+      onClick: stop_sidebar
     },
   },
   {
-    info:"sets the sequence length to 1",
+    info:"changes the reference step 0 to [200,-150,0,0,100,0]",
     button:{
-      name:"set length: 1",
-      onClick: set_sequence_1
+      name:"set ref 0 ",
+      onClick: set_ref_1
     },
   },
   {
-    info:"sets the sequence length to 2",
+    info:"changes the reference step 0 to [0,-150,0,0,100,0]",
     button:{
-      name:"set length: 2",
-      onClick: set_sequence_2
+      name:"set ref 0 ",
+      onClick: set_ref_2
     },
   },
-  
 ],
 info:{
-  name:"Chains",
+  name:"Chain loop",
   description:`This is a demonstration on how to use MatrixChain. It will create a group of  animations for you. The MatrixChain class uses a reference matrix to switch between 2 states. You basically have a start step and a target step. The matrix lerp animations that get created have a step length of 2 however. You can update the target step, by calling the animator method.`,
   gitlink:"https://github.com/ji-podhead/kooljs/blob/main/livedemo_project/src/examples/e6.js",
 }

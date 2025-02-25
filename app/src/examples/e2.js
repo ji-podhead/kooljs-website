@@ -34,11 +34,16 @@ function Example(animator) {
         steps_max_length:10,
   })
     return (
-    <div class="w-full h-full bg-[#ffffff]">
+      <div class="w-full h-full bg-slate-700">
+      <div class="w-full h-full flex items-center justify-center">
+        <div     class="w-[95%] h-[95%]  border-4 border-[#21d9cd]  flex flex-col rounded-md justify-center justify-items-center items-center">
+
       <div class="w-full h-full items-center justify-center flex flex-col">
         <div class="shrink-1 items-center justify-center w-full h-full font-size-xl flex flex-row">
           <div id="e2_a" class="w-10 h-10 bg-blue-400">a</div>
           <div id="e2a_b" class="w-10 h-10 bg-blue-500">b</div>
+        </div>
+        </div>
         </div>
       </div>
     </div>
