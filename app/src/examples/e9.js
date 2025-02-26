@@ -1,203 +1,320 @@
-import   {start_animations,setMatrix,get_lerp_value, get_constant_row,set_duration, hard_reset, lambda_call, get_constant_number, reorient_duration, reorient_target, reorient_duration_by_distance, get_constant, reorient_duration_by_progress, get_group_values, is_active, set_group_orientation, start_group, reverse_group_delays} from 'kooljs/worker_functions'
+import { start_animations, setMatrix, get_lerp_value, get_constant_row, set_duration, hard_reset, lambda_call, get_constant_number, reorient_duration, reorient_target, reorient_duration_by_distance, get_constant, reorient_duration_by_progress, get_group_values, is_active, set_group_orientation, start_group, reverse_group_delays, stop_animations } from 'kooljs/worker_functions'
 import { useRef } from 'react'
-const animProps={
+const animProps = {
   animator: undefined,//                 <- animator               << Animator >> 
   animations: undefined,//           <- boxes dict             << div | MatrixLerp >> 
   boxes: undefined,//  <- anim id's              << Float32 >> 
-  button_state:false,
+  direction: undefined,
+  sidebar_animation: undefined,
+  button_animation: undefined,
+  start_animation: undefined,
+  button_reference: undefined,
+  sidebar_reference: undefined,
+  timeline: undefined,
+  timelineid:undefined,
   sidebar_state:false,
-  sidebar_animation:undefined,
-  button_animation:undefined,
-  start_animation:undefined,
-  button_const:undefined,
-  sidebar_const:undefined
+  button_state:false
 }
-function bg(val) { return `linear-gradient(to right, rgb(255,50,50), rgb(${val[3]}, ${val[4]}, ${val[5]})`}
-function setStyle(items,prefix) {
-  items.forEach((val,id)=>{
+function bg(val) { return `linear-gradient(to right, rgb(255,50,50), rgb(${val[3]}, ${val[4]}, ${val[5]})` }
+function setStyle(items, prefix) {
+  items.forEach((val, id) => {
     //console.log(prefix+id+" " + val)
-  const doc=document.getElementById(prefix+id)
-   doc.style.transform = `translate(${val[0]}%,${val[1]}%)`;
-  doc.style.opacity = `${val[2]}%`;
-  doc.style.background = bg(val);
-  const doc2=document.getElementById("e9_"+id)
-  doc2.style.opacity = `${val[2]}%`;
-  
-})
+    const doc = document.getElementById(prefix + id)
+    doc.style.transform = `translate(${val[0]}%,${val[1]}%)`;
+    doc.style.opacity = `${val[2]}%`;
+    doc.style.background = bg(val);
+    const doc2 = document.getElementById("e9_" + id)
+    doc2.style.opacity = `${val[2]}%`;
+  })
 }
-function sidebar_style(val){
-  const doc=document.getElementById("sidebar")
-  doc.style.width=`${val[0]}%`;
-  doc.style.height=`${val[1]}%`;
+function sidebar_style(val) {
+  const doc = document.getElementById("sidebar")
+  if(val[2]==1){
+    if(!animProps.sidebar_state){
+      document.getElementById("button_child").style.pointerEvents = "none"  
+    }
+    else if(animProps.button_state){ 
+    document.getElementById("button_child").style.pointerEvents = "all"
+    animProps.button_state=false
+    }
+    
+  }
+  doc.style.width = `${val[0]}%`;
+  //doc.style.height = `${val[1]}%`;
   doc.style.opacity = `${val[2]}%`;
 }
-function button_style(val){
-  const doc=document.getElementById("button")
-  doc.style.width=`${val[0]}%`;
-  doc.style.height=`${val[1]}%`;
+function button_style(val) {
+  //var doc = document.getElementById("button")
+  //doc.style.opacity = `${val[2]}%`;
+  var doc = document.getElementById("button_child")
+  //doc.style.width = `${val[0]}%`;
+  //doc.style.height = `${val[1]}%`;
   doc.style.opacity = `${val[2]}%`;
+  // doc.style.color=`rgba(255,255,255 ${val[2]}) `
 }
 function Example(animator) {
-  const length=7
+  const length = 7
   animProps.boxes = new Array(length)
   const reference_matrix = []
   animProps.animator = animator
-  const a=[100,0,-100,0,100,0]
-  const b=[0,0,100,150,50,255]
-  const c=[0,50,0,100,0,100]
-  reference_matrix.push([a,b,c]) // uni size reference matrix, so it can be used for all boxes
+  const a = [100, 0, -100, 0, 100, 0]
+  const b = [0, 0, 100, 150, 50, 255]
+  const c = [0, 50, 0, 100, 0, 100]
+  reference_matrix.push([a, b, c]) // uni size reference matrix, so it can be used for all boxes
   for (let i = 0; i < length; i++) {
-    animProps.boxes[i] =  <div class="transform h-10 w-40 left flex items-center rounded-md justify-center " id={"e9__" + i} key={"e9__" + i} style={{transform:`translate(0%,0%)`}}>
-        <div id={"e9_" + i} key={"e9_" + i} class="w-full h-full truncate opacity-0  border-[#21d9cd] border-2 rounded-md flex-col gap-2 items-center justify-center" >
-          <div class="text-center  "><b>Div No: {i}</b></div>
-          <div class="text-left w-[80%] h-[10%] pl-2" >
-            Line: --{1 + Math.floor(i / length)}--
-          </div>
+    animProps.boxes[i] = <div class="transform h-10 w-40 left flex items-center rounded-md justify-center " id={"e9__" + i} key={"e9__" + i} style={{ transform: `translate(0%,0%)` }}>
+      <div id={"e9_" + i} key={"e9_" + i} class="w-full h-full truncate opacity-0  border-[#21d9cd] border-2 rounded-md flex-col gap-2 items-center justify-center" >
+        <div class="text-center  "><b>Div No: {i}</b></div>
+        <div class="text-left w-[80%] h-[10%] pl-2" >
+          Line: --{1 + Math.floor(i / length)}--
         </div>
       </div>
+    </div>
   }
-  const sidebar_reference = [[0, 0], [100, 100]]
-  animProps.sidebar_const = animator.constant({
-    type: "matrix",
-    value: sidebar_reference
+  animProps.direction = animator.constant({
+    type: "number",
+    value: 0
   })
+  animProps.sidebar_reference = { start: [0, 0,0], end: [20, 100,100] }
   animProps.sidebar_animation = animator.Matrix_Lerp({
     render_callback: sidebar_style,
-    steps: sidebar_reference,
+    steps: [animProps.sidebar_reference.start, animProps.sidebar_reference.end],
     duration: 10
   })
-  const button_reference = [[0, 0], [100, 100]]
-  animProps.button_const = animator.constant({
-    type: "matrix",
-    value: button_reference
-  })
+  animProps.button_reference = { start: [0, 0,0], end: [100, 100,100] }
   animProps.button_animation = animator.Matrix_Lerp({
     render_callback: button_style,
-    steps: button_reference,
+    steps: [animProps.button_reference.start, animProps.button_reference.end],
     duration: 10
   })
- animProps.animations= animator.Matrix_Chain({
-  reference_matrix:reference_matrix,
-  length:length,
-  min_duration:5,
-  max_duration:7,
-  group_loop:false,
-  sequence_length:1,
-  custom_delay:{
-    callback:({animation_index,index,indices,progress,direction,target_step})=>{
-      if(direction==0) {
-          const new_delay=`${animProps.delay}`+(indices.length-index)*`${animProps.delay_spread}`
+  animProps.animations = animator.Matrix_Chain({
+    reference_matrix: reference_matrix,
+    length: length,
+    min_duration: 5,
+    max_duration: 7,
+    group_loop: false,
+    sequence_length: 1,
+    custom_delay: {
+      callback: ({ animation_index, index, indices, progress, direction, target_step }) => {
+        if (direction == 0) {
+          const new_delay = `${animProps.delay}` + (indices.length - index) * `${animProps.delay_spread}`
           return new_delay
         }
-        else{
-          const new_delay=`${animProps.delay}`+(index)*`${animProps.delay_spread}`
+        else {
+          const new_delay = `${animProps.delay}` + (index) * `${animProps.delay_spread}`
           return new_delay
         }
+      },
+      animProps: {
+        delay: 0,
+        delay_spread: 1
+      }
     },
-    animProps:{
-      delay:0,
-      delay_spread:1
-    }
-  },
-  id_prefix:"e9__",
-  callback:setStyle
- })
-animProps.start_animation = animator.Lambda({
-  callback:  (({button_state,sidebar_state,direction})=>{
-    const button_anim_state=is_active(`${animProps.button_animation.id}`)
-    const sidebar_anim_state=is_active(`${animProps.sidebar_animation.id}`)
-    const group_values=get_group_values(`${animProps.animations.id}`)
-   
-    if(direction==1){
-      if(!group_values.active){
-        
-        set_group_orientation(`${animProps.animations.id}`,[0,1])
-        start_group([1],[`${animProps.animations.id}`],true,true)
-        
-      }else{
-        const pref_dir=group_values.orientation[0]
-        set_group_orientation(`${animProps.animations.id}`,[2,1])
-        start_group([1],[`${animProps.animations.id}`],"progress",false)
-        if(pref_dir==2){
-         reverse_group_delays(`${animProps.animations.id}`)
+    id_prefix: "e9__",
+    callback: setStyle
+  })
+  animProps.start_animation = animator.Lambda({
+    callback: (({ direction }) => {
+      const group_values = get_group_values(`${animProps.animations.id}`)
+      if (direction == 1) {
+        if (!group_values.active) {
+          set_group_orientation(`${animProps.animations.id}`, [0, 1])
+          start_group([1], [`${animProps.animations.id}`], true, true)
+        } else {
+          const pref_dir = group_values.orientation[0]
+          set_group_orientation(`${animProps.animations.id}`, [2, 1])
+          start_group([1], [`${animProps.animations.id}`], "progress", false)
+          if (pref_dir == 2) {
+            reverse_group_delays(`${animProps.animations.id}`)
+          }
         }
-    }
-  }else{
-    if(!group_values.active){
-      set_group_orientation(`${animProps.animations.id}`,[1,2])
-      start_group([1],[`${animProps.animations.id}`],true,true)
-    }else{
-      if(group_values.orientation[0]==0) 
-        { 
-          set_group_orientation(`${animProps.animations.id}`,[2,1])
-          start_group([0],[`${animProps.animations.id}`],"progress",false)
+      } else {
+        if (!group_values.active) {
+          set_group_orientation(`${animProps.animations.id}`, [1, 2])
+          start_group([1], [`${animProps.animations.id}`], true, true)
+        }
+        else {
+          if (group_values.orientation[0] == 0) {
+            set_group_orientation(`${animProps.animations.id}`, [2, 1])
+            start_group([0], [`${animProps.animations.id}`], "progress", false)
+          }
+          else {
+            set_group_orientation(`${animProps.animations.id}`, [2, 1])
+            if (group_values.active) {
+              start_group([0], [`${animProps.animations.id}`], "progress", false)
+              reverse_group_delays(`${animProps.animations.id}`)
+            }
+            else {
+              start_group([0], [`${animProps.animations.id}`], true, true)
+              reverse_group_delays(`${animProps.animations.id}`)
+            }
+          }
+        }
+      }
+    }),
+    animProps: animProps
+  })
+  animProps.timelineid=animator.get_size()
+  animProps.timeline = animator.Timeline({
+    duration: 30,
+    render_interval: 10,
+    length: 1,
+    loop: false,
+    callback: {
+      callback: (({ time }) => {
+        console.log("----------timeline event----------")
+        const direction = get_constant_number(`${animProps.direction.id}`)
+        var sidebar_state,button_state,group_state
+        const group_values = get_group_values(`${animProps.animations.id}`)
+        if(direction==1){
+          sidebar_state=get_lerp_value(`${animProps.sidebar_animation.id}`)==[`${animProps.sidebar_reference.start}`]
+          button_state=get_lerp_value(`${animProps.button_animation.id}`)==[`${animProps.button_reference.end}`]
+          group_state=!group_values.active || (group_values.progress == 0)
         }
         else{
-          set_group_orientation(`${animProps.animations.id}`,[2,1])
-          if(group_values.active){
-            start_group([0],[`${animProps.animations.id}`],"progress",false)  
-            reverse_group_delays(`${animProps.animations.id}`)
-          }
-          else  {
-            start_group([0],[`${animProps.animations.id}`],true,true)
-            reverse_group_delays(`${animProps.animations.id}`)
-          }
-          
+          sidebar_state=get_lerp_value(`${animProps.sidebar_animation.id}`)==[`${animProps.sidebar_reference.end}`]
+          button_state=get_lerp_value(`${animProps.button_animation.id}`)==[`${animProps.button_reference.start}`]
+          group_state= group_values.active || (group_values.progress == 1)
         }
-      
-  }
-  }
-  }),
-  animProps:animProps
-})
+        const start = (animation, ref, direction) => {
+          reorient_target({
+            index: animation,
+            step: 0,
+            direction: 1,
+            reference: ref,
+            matrix_row: 1
+          })
+          reorient_duration_by_progress({
+            index: animation,
+            max_duration: 10,
+            min_duration: 5,
+            soft_reset: true,
+          })
+        }
+        console.log("time " + time)
+        if (time == 0) {
+          if (direction == 1) {
+            if (!group_values.active) {
+              if (!button_state) {
+                start(`${animProps.button_animation.id}`, [`${animProps.button_reference.start}`], 1)
+              }
+              else {
+                start(`${animProps.sidebar_animation.id}`, [`${animProps.sidebar_reference.end}`], 1)
+              }
+            }
+            else {
+              lambda_call(`${animProps.start_animation.id}`, { direction: 1 })
+              stop_animations([`${animProps.timelineid}`])
+            }
+          }
+          else {
+            if (!group_values.active) {
+              lambda_call(`${animProps.start_animation.id}`, { direction: 0 })
+            }
+            else if (!sidebar_state) {
+              start(`${animProps.sidebar_animation.id}`, [`${animProps.sidebar_reference.start}`], 0)
+            }
+            else if (!button_state) {
+              start(`${animProps.button_animation.id}`, [`${animProps.button_reference.end}`], 0)
+              stop_animations([`${animProps.timelineid}`])
+            }
+          }
+        }
+        else if (time == 10) {
+          if (direction == 1) {
+            if (!group_values.active) {
+              if (!sidebar_state) {
+                start(`${animProps.sidebar_animation.id}`, [`${animProps.sidebar_reference.end}`], 1)
+              }
+            }
+            else {
+              lambda_call(`${animProps.start_animation.id}`, { direction: 1 })
+              stop_animations([`${animProps.timelineid}`])
+            }
+          }
+          else{
+            if (!sidebar_state) {
+              start(`${animProps.sidebar_animation.id}`, [`${animProps.sidebar_reference.start}`], 0)
+            }
+            else if(!button_state){
+              start(`${animProps.button_animation.id}`, [`${animProps.button_reference.end}`], 0)
+              stop_animations([`${animProps.timelineid}`])
+            }
+          }
+        }
+        else if (time == 20){
+          if(direction==1){
+            if(!group_values.active) {
+                lambda_call(`${animProps.start_animation.id}`, { direction: direction })
+            }
+        }
+        else if(!button_state){
+          start(`${animProps.button_animation.id}`, [`${animProps.button_reference.end}`], 0)
+        }
+        }
+        console.log("--------------------------------")
+      }),
+      animProps: animProps
+    }
+  })
+  
   return (
     <div class="w-full h-full bg-slate-700">
-      <div class="w-full h-full flex items-center justify-center" id="sidebar">
-        <div class="absolute self-start justify-self-start  border-4 border-[#216762] w-[5%] aspect-square">
-          <button class="w-[90%] h-[90%] text-white bg-slate-800" id="button"
-          onMouseEnter={(()=>{
-            animProps.button_state=true
-            animProps.start_animation.call({button_state:animProps.button_state,sidebar_state:animProps.sidebar_state,direction:1})})}
-          onMouseLeave={(()=>{
-            animProps.button_state=false
-            animProps.start_animation.call({button_state:animProps.button_state,sidebar_state:animProps.sidebar_state,direction:0})
-          })
-          }
-          >
+      <div class="w-full h-full flex items-center justify-end" >
+        <div id="button" class="absolute self-start justify-self-start   w-[5%] aspect-square"> 
+          <button id="button_child" class="w-[90%] h-[90%] text-white bg-slate-800 border-4 border-[#216762]" 
+            onMouseEnter={(() => {
+              //if(!animProps.sidebar_state){
+              animProps.button_state=true
+              start_sidebar()
+              //}
+            })}
+            onMouseLeave={(() => {
+              if(animProps.sidebar_state){
+              animProps.button_state=false
+              stop_sidebar()
+              }
+            })
+            }>
             #
           </button>
         </div>
-        <div class="w-[30%] h-[95%]  border-4 border-[#21d9cd]  flex flex-col rounded-md justify-center justify-items-center items-center"
-          onMouseEnter={(()=>{
-            animProps.sidebar_state=true
-            animProps.start_animation.call({button_state:animProps.button_state,sidebar_state:animProps.sidebar_state,direction:1})
+        <div id="sidebar" class="w-[0%] h-[95%] border-4 border-[#21d9cd]     rounded-md rounded-r-none ">
+          <div  class="w-full h-full flex flex-col justify-center justify-items-center items-center"
+          onMouseEnter={(() => {
+            if(!animProps.button_state){
+              animProps.sidebar_state=true
+              start_sidebar()
+          }
           })
           }
-          onMouseLeave={(()=>{
+          onMouseLeave={(() => {
             animProps.sidebar_state=false
-            animProps.start_animation.call({button_state:animProps.button_state,sidebar_state:animProps.sidebar_state,direction:0})
+            stop_sidebar()
           })
-          }
-        >
+          }>
           {animProps.boxes.map((e) => e)}
+          </div>
         </div>
       </div>
     </div>
   )
 }
-const start_sidebar=(()=>{
-  animProps.start_animation.call({button_state:animProps.button_state,sidebar_state:animProps.sidebar_state,direction:1})
+const start_sidebar = (() => {
+  animProps.animator.update_constant([{ id: animProps.direction.id, type: "number", value: 1 }])
+  animProps.animator.reset_animations([animProps.timeline.id])
+  animProps.animator.start_animations([animProps.timeline.id])
 })
-const stop_sidebar=(()=>{
-  animProps.start_animation.call({button_state:animProps.button_state,sidebar_state:animProps.sidebar_state,direction:0})
-  // animProps.animator.set_group_orientation(animProps.animations.id,[1,2])
-  // animProps.animator.start_groups([animProps.animations.id],[1])
+const stop_sidebar = (() => {
+  animProps.animator.update_constant([{ id: animProps.direction.id, type: "number", value: 0 }])
+  animProps.animator.reset_animations([animProps.timeline.id])
+  animProps.animator.start_animations([animProps.timeline.id])
 })
 
-const exampleProps={
-  
+const exampleProps = {
+
   // this is just util stuff for the example project
- mdFile: `\`\`\`javascript
+  mdFile: `\`\`\`javascript
  import   {start_animations,setMatrix,get_lerp_value, get_constant_row,set_duration} from 'kooljs/worker'
 const animProps={
   animator:undefined,//                      <- animator               << Animator >> 
@@ -273,27 +390,27 @@ const set_size=(()=>{
     animProps.animator.update_constant([{type:"matrix",id:animProps.size_constant.id,value:[[(30+Math.random()*70),30+Math.random()*70]]}])
 })
 
-  \`\`\``, Controls:[
-  {
-    info:"calls the lambda start_animation with direction 1",
-    button:{
-      name:"start",
-      onClick: start_sidebar
+  \`\`\``, Controls: [
+    {
+      info: "calls the lambda start_animation with direction 1",
+      button: {
+        name: "start",
+        onClick: start_sidebar
+      },
     },
-  },  
-  {
-    info:"stop the group",
-    button:{
-      name:"stop",
-      onClick: stop_sidebar
+    {
+      info: "stop the group",
+      button: {
+        name: "stop",
+        onClick: stop_sidebar
+      },
     },
-  },
-],
-info:{
-  name:"Chain loop",
-  description:`This is a demonstration on how to use MatrixChain. It will create a group of  animations for you. The MatrixChain class uses a reference matrix to switch between 2 states. You basically have a start step and a target step. The matrix lerp animations that get created have a step length of 2 however. You can update the target step, by calling the animator method.`,
-  gitlink:"https://github.com/ji-podhead/kooljs/blob/main/livedemo_project/src/examples/e6.js",
+  ],
+  info: {
+    name: "Chain loop",
+    description: `This is a demonstration on how to use MatrixChain. It will create a group of  animations for you. The MatrixChain class uses a reference matrix to switch between 2 states. You basically have a start step and a target step. The matrix lerp animations that get created have a step length of 2 however. You can update the target step, by calling the animator method.`,
+    gitlink: "https://github.com/ji-podhead/kooljs/blob/main/livedemo_project/src/examples/e6.js",
+  }
 }
-}
-export { Example, exampleProps}
+export { Example, exampleProps }
 
