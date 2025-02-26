@@ -10,6 +10,7 @@ import { Example as E5 } from "./examples/e5"
 import { Example as E6 } from "./examples/e6"
 import { Example as E7 } from "./examples/e7"
 import { Example as E8 } from "./examples/e8"
+import { Example as E9 } from "./examples/e9"
 
 import { Widgets, AnimationControl, Header, CodeBlocks } from "./utils"
 const Animated_Components = []
@@ -30,6 +31,7 @@ myHeaders.set("Cross-Origin-Embedder-Policy", "require-corp");
       Animated_Components.push(E6(animator))
       Animated_Components.push(E7(animator))
       Animated_Components.push(E8(animator))
+      Animated_Components.push(E9(animator))
       resolve();
     }).then(() => {
       animator.init(true);

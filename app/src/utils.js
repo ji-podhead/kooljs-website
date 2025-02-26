@@ -13,13 +13,15 @@ import { exampleProps as exampleProps4 } from './examples/e5';
 import { exampleProps as exampleProps5 } from './examples/e6';
 import { exampleProps as exampleProps6 } from './examples/e7';
 import { exampleProps as exampleProps7 } from './examples/e8';
+import { exampleProps as exampleProps8 } from './examples/e9';
 
-const tutorials = [exampleProps0, exampleProps1, exampleProps2, exampleProps3, exampleProps4, exampleProps5,exampleProps6,exampleProps7]
+const tutorials = [exampleProps0, exampleProps1, exampleProps2, exampleProps3, exampleProps4, exampleProps5,exampleProps6,exampleProps7,exampleProps8]
 async function sleep(milliseconds) {
     return new Promise(resolve => setTimeout(resolve, milliseconds))
 }
 async function next(setsel, animator, index) {
     animator.stop()
+    animator.stop_groups("all")
     animator.stop_animations("all")
     await sleep(24).then(() => { setsel(index) }) 
         

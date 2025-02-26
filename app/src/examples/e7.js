@@ -48,7 +48,7 @@ function Example(animator) {
   id_prefix:"e7_",
   callback:setStyle,
   custom_delay:{
-    callback:({animation_index,index,indices,direction})=>{
+    callback:({animation_index,index,indices,progress,direction,target_step})=>{
       if(direction==1) {
           const new_delay=`${animProps.delay}`+(indices.length-index)*`${animProps.delay_spread}`
           return new_delay
