@@ -12,7 +12,7 @@ const animProps = {
   timeline: undefined,
   timeline2: undefined,
   timelineid: undefined,
-  timelineid2:undefined,
+  timelineid2: undefined,
   sidebar_state: false,
   button_state: false
 }
@@ -24,19 +24,19 @@ function setStyle(items, prefix) {
     doc.style.transform = `translate(${val[0]}%,${val[1]}%)`;
     doc.style.opacity = `${val[2]}%`;
     doc.style.background = bg(val);
-    const doc2 = document.getElementById("e9_" + id)
+    const doc2 = document.getElementById("e10_" + id)
     doc2.style.opacity = `${val[2]}%`;
   })
 }
 function sidebar_style(val) {
   const doc = document.getElementById("sidebar")
-  if(val[2]==1){
-    if(!animProps.sidebar_state){
-      document.getElementById("button_child").style.pointerEvents = "none"  
+  if (val[2] == 1) {
+    if (!animProps.sidebar_state) {
+      document.getElementById("button_child").style.pointerEvents = "none"
     }
-    else if(animProps.button_state){ 
-    document.getElementById("button_child").style.pointerEvents = "all"
-    animProps.button_state=false
+    else if (animProps.button_state) {
+      document.getElementById("button_child").style.pointerEvents = "background"
+      animProps.button_state = false
     }
   }
   doc.style.width = `${val[0]}%`;
@@ -51,13 +51,13 @@ function Example(animator) {
   animProps.boxes = new Array(length)
   const reference_matrix = []
   animProps.animator = animator
-  const a = [100, 0, -100, 0, 100, 0]
+  const a = [20, 0, 0, 0, 100, 0]
   const b = [0, 0, 100, 150, 50, 255]
   const c = [0, 50, 0, 100, 0, 100]
   reference_matrix.push([a, b, c]) // uni size reference matrix, so it can be used for all boxes
   for (let i = 0; i < length; i++) {
-    animProps.boxes[i] = <div class="transform h-10 w-40 left flex items-center rounded-md justify-center " id={"e9__" + i} key={"e9__" + i} style={{ transform: `translate(0%,0%)` }}>
-      <div id={"e9_" + i} key={"e9_" + i} class="w-full h-full truncate opacity-0  border-[#21d9cd] border-2 rounded-md flex-col gap-2 items-center justify-center" >
+    animProps.boxes[i] = <div class="transform h-10 w-40 left flex items-center rounded-md justify-center " id={"e10__" + i} key={"e10__" + i} style={{ transform: `translate(0%,0%)` }}>
+      <div id={"e10_" + i} key={"e10_" + i} class="w-full h-full truncate opacity-0  border-[#21d9cd] border-2 rounded-md flex-col gap-2 items-center justify-center" >
         <div class="text-center  "><b>Div No: {i}</b></div>
         <div class="text-left w-[80%] h-[10%] pl-2" >
           Line: --{1 + Math.floor(i / length)}--
@@ -65,12 +65,12 @@ function Example(animator) {
       </div>
     </div>
   }
-  animProps.sidebar_reference = { start: [0, 0, 0], end: [20, 100, 100] }
+  animProps.sidebar_reference = { start: [0, 0, 0], end: [14, 100, 100] }
   animProps.sidebar_animation = animator.Matrix_Lerp({
     render_callback: sidebar_style,
     steps: [animProps.sidebar_reference.start, animProps.sidebar_reference.end],
     duration: 15,
-    delay:3
+    delay: 3
   })
   animProps.button_reference = { start: [100, 100, 100], end: [0, 0, 0] }
   animProps.button_animation = animator.Matrix_Lerp({
@@ -81,9 +81,10 @@ function Example(animator) {
   animProps.animations = animator.Matrix_Chain({
     reference_matrix: reference_matrix,
     length: length,
-    min_duration: 5,
-    max_duration: 7,
+    min_duration: 3,
+    max_duration: 5,
     group_loop: false,
+    target_step:0,
     sequence_length: 1,
     custom_delay: {
       callback: ({ animation_index, index, indices, progress, direction, target_step }) => {
@@ -101,62 +102,94 @@ function Example(animator) {
         delay_spread: 1
       }
     },
-    id_prefix: "e9__",
+    id_prefix: "e10__",
     callback: setStyle
   })
-  animProps.start_animation = animator.Lambda({
-    callback: (({ direction }) => {
-      const group_values = get_group_values(`${animProps.animations.id}`)
-      if (direction == 1) {
-        if (!group_values.active) {
-          set_group_orientation(`${animProps.animations.id}`, [0, 1])
-          start_group([1], [`${animProps.animations.id}`], true, true)
-        } else {
-          const pref_dir = group_values.orientation[0]
-          set_group_orientation(`${animProps.animations.id}`, [2, 1])
-          start_group([1], [`${animProps.animations.id}`], "progress", false)
-          if (pref_dir == 2) {
-            reverse_group_delays(`${animProps.animations.id}`)
-          }
+  animProps.timelineid = animator.get_size()
+  animProps.timeline = animator.Timeline({
+    duration: 6,
+    render_interval: 2,
+    length: 1,
+    loop: true,
+    callback: {
+      callback: (({ time }) => {
+        const group_values = get_group_values(`${animProps.animations.id}`)
+        const start = (animation, ref, min_duration,max_duration) => {
+          reorient_target({ index: animation, step: 0, direction: 1, reference: ref, matrix_row: 1 })
+          reorient_duration_by_progress({ index: animation, max_duration: max_duration, min_duration:  min_duration, soft_reset: true, })
         }
-      } else {
-        if (!group_values.active) {
+        if (time==0) {
+          start(`${animProps.button_animation.id}`, [`${animProps.button_reference.end}`],2,4)}
+        else if ( time == 2) {
+          start(`${animProps.sidebar_animation.id}`, [`${animProps.sidebar_reference.end}`],4,6)}
+        else if (time==6) {
+            set_group_orientation(`${animProps.animations.id}`, [0, 1])
+            if(group_values.active){
+              start_group([1], [`${animProps.animations.id}`], "progress", false)
+            }else{
+              start_group([1], [`${animProps.animations.id}`], true, true)
+            }
+            stop_animations([`${animProps.timelineid}`])
+        }
+      }),
+      animProps: animProps
+    }
+  })
+  animProps.timelineid2 = animator.get_size()
+  animProps.timeline2 = animator.Timeline({
+    duration: 10,
+    render_interval: 2,
+    length: 1,
+    loop: true,
+    callback: {
+      callback: (({ time }) => {
+        const group_values = get_group_values(`${animProps.animations.id}`)
+        const start = (animation, ref, min,max) => {
+          reorient_target({ index: animation, step: 0, direction: 1, reference: ref, matrix_row: 1 })
+          reorient_duration_by_progress({ index: animation, max_duration: max, min_duration: min, soft_reset: true, })
+        }
+        if (time==0) {
           set_group_orientation(`${animProps.animations.id}`, [1, 2])
-          start_group([1], [`${animProps.animations.id}`], true, true)
-        }
-        else {
-          if (group_values.orientation[0] == 0) {
-            set_group_orientation(`${animProps.animations.id}`, [2, 1])
-            start_group([0], [`${animProps.animations.id}`], "progress", false)
-          }
-          else {
-            set_group_orientation(`${animProps.animations.id}`, [2, 1])
-            if (group_values.active) {
-              start_group([0], [`${animProps.animations.id}`], "progress", false)
-              reverse_group_delays(`${animProps.animations.id}`)
-            }
-            else {
-              start_group([0], [`${animProps.animations.id}`], true, true)
-              reverse_group_delays(`${animProps.animations.id}`)
-            }
+          if(group_values.active){
+            start_group([1], [`${animProps.animations.id}`], "progress", false)
+            console.log("stopping")
+          }else{
+            start_group([1], [`${animProps.animations.id}`], true, true)
+            console.log("stopping")
           }
         }
-      }
-    }),
-    animProps: animProps
+         if (time == 2) {
+          start(`${animProps.sidebar_animation.id}`, [`${animProps.sidebar_reference.start}`], 5,7)
+        }
+        else if(time ==6) {
+          start(`${animProps.button_animation.id}`, [`${animProps.button_reference.start}`], 2,5)
+          stop_animations([`${animProps.timelineid2}`])
+        }
+      }),
+      animProps: animProps
+    }
   })
   return (
     <div class="w-full h-full bg-slate-700">
-      <div class="w-full h-full flex items-center justify-center" >
+      <div class="w-full h-full flex items-center justify-end" >
         <div id="button" class="absolute self-start justify-self-start   w-[5%] aspect-square">
+          <button id="button_child" class="w-[90%] h-[90%] text-white bg-slate-800 border-4 border-[#216762]"
+            onMouseEnter={(() => {
+              //if(!animProps.sidebar_state){
+              animProps.button_state = true
+              start_sidebar()
+              //}
+            })}
+          // onMouseLeave={(() => { if (animProps.sidebar_state) { animProps.button_state = false; stop_sidebar() } })
+          // }
+          >
+            #
+          </button>
         </div>
-        <div id="sidebar" class="w-[30%] h-[95%] border-4 border-[#21d9cd]     rounded-md rounded-r-none ">
+        <div id="sidebar" class="w-[0%] h-[40%] border-4 border-[#21d9cd]  absolute z-10   rounded-md rounded-r-none ">
           <div class="w-full h-full flex flex-col justify-center justify-items-center items-center"
-           onMouseEnter={(() => {
-            start_sidebar()
-          })}
-          onMouseLeave={(() => { stop_sidebar()  })
-          }>
+            onMouseEnter={(() => { animProps.sidebar_state = true; start_sidebar() })}
+            onMouseLeave={(() => { stop_sidebar() })}>
             {animProps.boxes.map((e) => e)}
           </div>
         </div>
@@ -165,10 +198,14 @@ function Example(animator) {
   )
 }
 const start_sidebar = (() => {
-  animProps.start_animation.call({direction: 1})
+  animProps.animator.stop_animations([animProps.timeline2.id, animProps.timeline.id])
+  animProps.animator.reset_animations([animProps.timeline.id])
+  animProps.animator.start_animations([animProps.timeline.id])
 })
 const stop_sidebar = (() => {
-  animProps.start_animation.call({direction: 0})
+  animProps.animator.stop_animations([animProps.timeline2.id, animProps.timeline.id])
+  animProps.animator.reset_animations([animProps.timeline2.id])
+  animProps.animator.start_animations([animProps.timeline2.id])
 })
 
 const exampleProps = {

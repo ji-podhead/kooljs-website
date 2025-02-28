@@ -14,8 +14,10 @@ import { exampleProps as exampleProps5 } from './examples/e6';
 import { exampleProps as exampleProps6 } from './examples/e7';
 import { exampleProps as exampleProps7 } from './examples/e8';
 import { exampleProps as exampleProps8 } from './examples/e9';
+import { exampleProps as exampleProps9} from './examples/e10';
+import { exampleProps as exampleProps10} from './examples/e11';
 
-const tutorials = [exampleProps0, exampleProps1, exampleProps2, exampleProps3, exampleProps4, exampleProps5,exampleProps6,exampleProps7,exampleProps8]
+const tutorials = [exampleProps0, exampleProps1, exampleProps2, exampleProps3, exampleProps4, exampleProps5,exampleProps6,exampleProps7,exampleProps8,exampleProps9,exampleProps10]
 async function sleep(milliseconds) {
     return new Promise(resolve => setTimeout(resolve, milliseconds))
 }
