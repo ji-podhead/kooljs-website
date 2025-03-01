@@ -95,7 +95,6 @@ lines.map((l,i)=>{
         const possible = [0,1,2,3].filter((x)=>x!=current)
         const new_=possible[Math.floor(Math.random()*3)]
         update_constant(`${animProps.selected.id}`,"number",new_)
-        //debugger
        reorient_target({ index: `${animProps.animations.id}`, step: 0, direction: 1, reference: get_constant_row(`${animProps.ref_const.id}`,new_), matrix_row: 1 })
        start_animations([`${animProps.animations.id}`])
         console.log("new " +new_)}
