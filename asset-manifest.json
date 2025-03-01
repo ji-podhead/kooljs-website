@@ -1,17 +1,17 @@
 {
   "files": {
     "main.css": "/kooljs-website/static/css/main.5828625f.css",
-    "main.js": "/kooljs-website/static/js/main.aae8bb22.js",
+    "main.js": "/kooljs-website/static/js/main.09495a4c.js",
     "static/js/480.6833a93c.chunk.js": "/kooljs-website/static/js/480.6833a93c.chunk.js",
     "static/js/453.44867f0e.chunk.js": "/kooljs-website/static/js/453.44867f0e.chunk.js",
     "index.html": "/kooljs-website/index.html",
     "main.5828625f.css.map": "/kooljs-website/static/css/main.5828625f.css.map",
-    "main.aae8bb22.js.map": "/kooljs-website/static/js/main.aae8bb22.js.map",
+    "main.09495a4c.js.map": "/kooljs-website/static/js/main.09495a4c.js.map",
     "480.6833a93c.chunk.js.map": "/kooljs-website/static/js/480.6833a93c.chunk.js.map",
     "453.44867f0e.chunk.js.map": "/kooljs-website/static/js/453.44867f0e.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.5828625f.css",
-    "static/js/main.aae8bb22.js"
+    "static/js/main.09495a4c.js"
   ]
 }
